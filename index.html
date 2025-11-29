@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Daily + Weekly Planner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg: #0f1216;
+      --card: #151a21;
+      --muted: #8892a6;
+      --text: #e6eaf2;
+      --accent: #c8a36a;   /* warm, wood-like accent */
+      --accent-2: #7ea27c; /* calm green accent */
+      --ring: rgba(200,163,106,.35);
+    }
+    *{box-sizing: border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background: radial-gradient(1200px 500px at 10% 0%, #13171d 0%, var(--bg) 40%, #0c0f13 100%);
+      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.5;
+    }
+
+    .wrap{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 48px 20px 80px;
+    }
+
+    .header{
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .title{
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 700;
+      letter-spacing: .4px;
+      margin: 0 0 10px;
+    }
+    .subtitle{
+      font-size: clamp(14px, 2.4vw, 16px);
+      color: var(--muted);
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .grid{
+      display: grid;
+      gap: 22px;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 960px){
+      .grid{ grid-template-columns: 1.2fr .8fr; }
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0)), var(--card);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow:
+        0 1px 2px rgba(0,0,0,.35),
+        0 20px 60px rgba(0,0,0,.35),
+        inset 0 0 0 1px rgba(255,255,255,.03);
+    }
+    .card h2{
+      font-size: 22px;
+      margin: 0 0 10px;
+    }
+    .card p.lead{
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    /* Sections inside daily card */
+    .section{
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 14px;
+      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0));
+      position: relative;
+    }
+    .section:before{
+      content:"";
+      position:absolute;
+      inset:-1px;
+      border-radius: 12px;
+      pointer-events:none;
+      box-shadow: 0 0 0 0px var(--ring);
+      transition: box-shadow .25s ease;
+    }
+    .section:hover:before{
+      box-shadow: 0 0 0 3px var(--ring);
+    }
+
+    .section .heading{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 999px;
+      background: rgba(200,163,106,.14);
+      color: var(--accent);
+      border: 1px solid rgba(200,163,106,.35);
+    }
+
+    .items{
+      display:grid;
+      gap:8px;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 640px){
+      .items{ grid-template-columns: 1fr 1fr; }
+    }
+
+    .item{
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .item .label{
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .item .desc{
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 2px;
+    }
+    .item .time{
+      color: var(--accent-2);
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 6px;
+    }
+
+    /* Weekly themes */
+    .week{
+      display:grid;
+      gap: 10px;
+    }
+    .day{
+      display:grid;
+      grid-template-columns: auto 1fr auto;
+      align-items:center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.08);
+    }
+    .dot{
+      width: 10px;
+      height: 10px;
+      border-radius:50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 4px rgba(200,163,106,.15);
+    }
+    .day .name{
+      font-weight:700;
+      font-size:14px;
+    }
+    .day .theme{
+      color: var(--muted);
+      font-weight:600;
+      font-size:13px;
+    }
+    .day .passage{
+      font-size:13px;
+      color:#cfd6e6;
+      text-align:right;
+    }
+
+    /* Footer hint */
+    .foot{
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    /* Accent header divider */
+    .divider{
+      height: 2px;
+      width: 100%;
+      background: linear-gradient(90deg, transparent, rgba(200,163,106,.7), transparent);
+      margin: 12px 0 18px;
+    }
+
+    /* Small verse banner */
+    .verse{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: rgba(126,162,124,.12);
+      border: 1px solid rgba(126,162,124,.35);
+      color: #e8f1ea;
+      font-size: 13px;
+      margin-bottom: 14px;
+    }
+    .verse strong{
+      color:#a9d3a9;
+      font-weight:700;
+    }
+
+    /* Make it printer-friendly-ish */
+    @media print{
+      body{ background: #fff; color:#000; }
+      .card, .section, .item, .day{ box-shadow:none; background:#fff; border-color:#ddd; }
+      .badge{ color:#000; border-color:#bbb; background:#f3f3f3; }
+      .verse{ background:#f6fff6; color:#000; border-color:#cfe9cf; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wrap">
+    <header class="header">
+      <h1 class="title">Daily + Weekly Planner</h1>
+      <p class="subtitle">A focused rhythm for Bible study, carpentry, web development, and a clear mind—designed to keep your day purposeful and calm.</p>
+    </header>
+
+    <div class="grid">
+      <!-- DAILY PLANNER -->
+      <section class="card" aria-label="Daily planner">
+        <h2>Daily planner</h2>
+        <p class="lead">Structured flow through the day: spiritual grounding, creative work, learning, and peaceful rest.</p>
+
+        <div class="verse">
+          <strong>Colossians 3:23</strong>
+          <span>“Whatever you do, work at it with all your heart…”</span>
+        </div>
+
+        <!-- Morning -->
+        <div class="section">
+          <div class="heading">
+            <span class="badge">Morning — Start fresh</span>
+            <div class="divider" aria-hidden="true"></div>
+          </div>
+          <div class="items">
+            <div class="item">
+              <div class="label">Prayer & Bible study</div>
+              <div class="desc">Psalms or Proverbs; read, reflect, and pray.</div>
+              <div class="time">20–30 mins</div>
+            </div>
+            <div class="item">
+              <div class="label">Journal reflection</div>
+              <div class="desc">Write one key verse and how it applies today.</div>
+              <div class="time">10 mins</div>
+            </div>
+            <div class="item">
+              <div class="label">Light exercise</div>
+              <div class="desc">Stretch or take a short walk to energize.</div>
+              <div class="time">15–20 mins</div>
+            </div>
+            <div class="item">
+              <div class="label">Plan the day</div>
+              <div class="desc">Choose the top 3 priorities to focus on.</div>
+              <div class="time">10 mins</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Midday -->
+        <div class="section">
+          <div class="heading">
+            <span class="badge">Midday — Productive flow</span>
+            <div class="divider" aria-hidden="true"></div>
+          </div>
+          <div class="items">
+            <div class="item">
+              <div class="label">Carpentry & design work</div>
+              <div class="desc">Hands-on building, sketching, or site planning.</div>
+              <div class="time">2–3 hrs</div>
+            </div>
+            <div class="item">
+              <div class="label">Verse reminder</div>
+              <div class="desc">Keep today’s verse visible at your workspace.</div>
+              <div class="time">All day</div>
+            </div>
+            <div class="item">
+              <div class="label">Gratitude break</div>
+              <div class="desc">Deep breathing; note one thing you’re thankful for.</div>
+              <div class="time">10 mins</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Afternoon -->
+        <div class="section">
+          <div class="heading">
+            <span class="badge">Afternoon — Learning & growth</span>
+            <div class="divider" aria-hidden="true"></div>
+          </div>
+          <div class="items">
+            <div class="item">
+              <div class="label">Web development practice</div>
+              <div class="desc">HTML, CSS, JavaScript—build or refine a feature.</div>
+              <div class="time">1–2 hrs</div>
+            </div>
+            <div class="item">
+              <div class="label">Mini Bible study</div>
+              <div class="desc">Reflect on perseverance (Hebrews 12:1–2).</div>
+              <div class="time">15 mins</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Evening -->
+        <div class="section">
+          <div class="heading">
+            <span class="badge">Evening — Wind down</span>
+            <div class="divider" aria-hidden="true"></div>
+          </div>
+          <div class="items">
+            <div class="item">
+              <div class="label">Review & gratitude</div>
+              <div class="desc">Note accomplishments and blessings from the day.</div>
+              <div class="time">15 mins</div>
+            </div>
+            <div class="item">
+              <div class="label">Bible study</div>
+              <div class="desc">Gospels for peace and renewal; end with prayer.</div>
+              <div class="time">20–30 mins</div>
+            </div>
+            <div class="item">
+              <div class="label">Relaxation</div>
+              <div class="desc">Music, puzzles, or light reading before sleep.</div>
+              <div class="time">As needed</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="foot">Tip: Keep a small notebook or notes app to capture ideas without breaking your flow.</div>
+      </section>
+
+      <!-- WEEKLY THEMES -->
+      <section class="card" aria-label="Weekly Bible study themes">
+        <h2>Weekly Bible study themes</h2>
+        <p class="lead">Anchor your week with focused themes and passages.</p>
+
+        <div class="week">
+          <div class="day">
+            <div class="dot" aria-hidden="true"></div>
+            <div>
+              <div class="name">Monday</div>
+              <div class="theme">Wisdom</div>
+            </div>
+            <div class="passage">Proverbs — Guidance for decisions</div>
+          </div>
+
+          <div class="day">
+            <div class="dot" aria-hidden="true"></div>
+            <div>
+              <div class="name">Wednesday</div>
+              <div class="theme">Faith</div>
+            </div>
+            <div class="passage">Hebrews 11 — Trust in God</div>
+          </div>
+
+          <div class="day">
+            <div class="dot" aria-hidden="true"></div>
+            <div>
+              <div class="name">Friday</div>
+              <div class="theme">Gratitude</div>
+            </div>
+            <div class="passage">Psalms of thanksgiving — Thankfulness practice</div>
+          </div>
+
+          <div class="day">
+            <div class="dot" aria-hidden="true"></div>
+            <div>
+              <div class="name">Sunday</div>
+              <div class="theme">Renewal</div>
+            </div>
+            <div class="passage">Gospels — Rest and spiritual renewal</div>
+          </div>
+        </div>
+
+        <div class="foot">Adjust passages to your church reading plan or personal study focus.</div>
+      </section>
+    </div>
+  </div>
+
+</body>
+</html>
